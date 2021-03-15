@@ -10,6 +10,9 @@ gcloud compute instances create nucleus-jumphost \
           --machine-type f1-micro  \
           --image-family debian-9  \
           --image-project debian-cloud \
+          --scopes cloud-platform \
+          --no-address
+
           
 Task 2: Create a Kubernetes service cluster
 Run command:
@@ -54,11 +57,13 @@ gcloud compute instance-groups managed create web-server-group \
           --region us-east1
 
 
-
 gcloud compute firewall-rules create web-server-firewall \
           --allow tcp:80 \
           --network nucleus-vpc
+          
+          
 gcloud compute http-health-checks create http-basic-check
+
 gcloud compute instance-groups managed \
           set-named-ports web-server-group \
           --named-ports http:80 \
@@ -69,6 +74,7 @@ gcloud compute backend-services create web-server-backend \
           --protocol HTTP \
           --http-health-checks http-basic-check \
           --global
+          
 gcloud compute backend-services add-backend web-server-backend \
           --instance-group web-server-group \
           --instance-group-region us-east1 \
@@ -77,14 +83,14 @@ gcloud compute backend-services add-backend web-server-backend \
 
 gcloud compute url-maps create web-server-map \
           --default-service web-server-backend
+          
 gcloud compute target-http-proxies create http-lb-proxy \
           --url-map web-server-map
-
-
 
 
 gcloud compute forwarding-rules create http-content-rule \
         --global \
         --target-http-proxy http-lb-proxy \
         --ports 80
+        
 gcloud compute forwarding-rules list
