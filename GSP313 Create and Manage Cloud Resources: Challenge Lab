@@ -1,14 +1,28 @@
+# Replace variable with ones indicated in the challenge
+
+export FIREWALL_NAME=grant-tcp-rule-399
+export INSTANCE_NAME=nucleus-jumphost-604
+export MY_REGION=us-central1
+export MY_ZONE=us-central1-b
+export MY_PORT=8081
+
 Lab Name: Create and Manage Cloud Resources: Challenge Lab (GSP313)
 
 
 Task 1: Create a project jumphost instance
 Run command:
 
-gcloud compute instances create nucleus-jumphost \
+Lab Name: Create and Manage Cloud Resources: Challenge Lab (GSP313)
+
+
+Task 1: Create a project instance
+Run command:
+
+gcloud compute instances create $INSTANCE_NAME \
           --network nucleus-vpc \
-          --zone us-east1-b  \
+          --zone $MY_ZONE  \
           --machine-type f1-micro  \
-          --image-family debian-9  \
+          --image-family debian-10  \
           --image-project debian-cloud \
           --scopes cloud-platform \
           --no-address
@@ -20,16 +34,17 @@ Run command:
 gcloud container clusters create nucleus-backend \
           --num-nodes 1 \
           --network nucleus-vpc \
-          --region us-east1
+          --region $MY_REGION
+          
 gcloud container clusters get-credentials nucleus-backend \
-          --region us-east1
+          --region $MY_REGION
 
 kubectl create deployment hello-server \
           --image=gcr.io/google-samples/hello-app:2.0
 
 kubectl expose deployment hello-server \
           --type=LoadBalancer \
-          --port 8080
+          --port $MY_PORT
 
 Task 3: Set up an HTTP load balancer
 Run command:
@@ -47,17 +62,17 @@ gcloud compute instance-templates create web-server-template \
           --metadata-from-file startup-script=startup.sh \
           --network nucleus-vpc \
           --machine-type g1-small \
-          --region us-east1
+          --region $MY_REGION
 
 
 gcloud compute instance-groups managed create web-server-group \
           --base-instance-name web-server \
           --size 2 \
           --template web-server-template \
-          --region us-east1
+          --region $MY_REGION
 
 
-gcloud compute firewall-rules create web-server-firewall \
+gcloud compute firewall-rules create $FIREWALL_NAME \
           --allow tcp:80 \
           --network nucleus-vpc
           
@@ -67,7 +82,7 @@ gcloud compute http-health-checks create http-basic-check
 gcloud compute instance-groups managed \
           set-named-ports web-server-group \
           --named-ports http:80 \
-          --region us-east1
+          --region $MY_REGION
 
 
 gcloud compute backend-services create web-server-backend \
@@ -77,7 +92,7 @@ gcloud compute backend-services create web-server-backend \
           
 gcloud compute backend-services add-backend web-server-backend \
           --instance-group web-server-group \
-          --instance-group-region us-east1 \
+          --instance-group-region $MY_REGION \
           --global
 
 
@@ -94,3 +109,4 @@ gcloud compute forwarding-rules create http-content-rule \
         --ports 80
         
 gcloud compute forwarding-rules list
+
